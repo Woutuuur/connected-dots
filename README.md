@@ -1,7 +1,7 @@
 # Connected Dots
 Website for creating nice visuals using p5.js 
 
-![](ex.gif)
+![](ex2.gif)
 
 Features:
 - Choose any two colors
