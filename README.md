@@ -2,8 +2,9 @@
 Website for creating nice visuals using p5.js 
 
 An online version can be found [here](https://editor.p5js.org/Woutuuur/full/MA1PTEHOg).
+
 This is what it looks like:
-[](ex2.gif)
+![](ex2.gif)
 
 Features:
 - Choose any two colors
