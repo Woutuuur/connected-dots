@@ -1,7 +1,7 @@
 # Connected Dots
 Website for creating nice visuals using p5.js 
 
-<iframe src="https://editor.p5js.org/Woutuuur/embed/MA1PTEHOg"></iframe>
+An online version can be found [here](https://editor.p5js.org/Woutuuur/full/MA1PTEHOg)
 
 Features:
 - Choose any two colors
