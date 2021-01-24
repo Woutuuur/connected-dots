@@ -3,8 +3,17 @@ let speedModifier = 0.2;
 let amountOfDots = 0;
 let maxLineLength = 100;
 let gradient = [];
-let lineWidth = 1;
+let lineWidth = 2;
 const maxSafeLineDist = 250;
+let pg;
+let dt;
+let fr = 30;
+var innerScreenWidth;
+var innerScreenHeight;
+var marginTopBottom;
+var marginLeftRight;
+var innerScreenEnabled = false;
+var optionsOpen = true;
 
 function interpolateColor(color1, color2, factor) {
     if (arguments.length < 3) { 
@@ -33,18 +42,22 @@ function interpolateColors(color1, color2, steps) {
 
 function showInfo()
 {
-  var x = document.getElementById("input-fields");
-  var y = document.getElementById("options");
+  let x = document.getElementById("input-fields");
+  let y = document.getElementById("options");
+  let z = document.getElementById("closeButton");
   if (x.style.display == "none")
   {
+    optionsOpen = true;
     x.style.display = "inline-block";
     y.style.background = "rgba(255,255,255,0.1)";
+    z.style.display = "inline-block";
   }
   else
   {
+    optionsOpen = false;
     x.style.display = "none";
-    
     y.style.background = "none";
+    z.style.display = "none";
   }
 }
 
@@ -53,10 +66,14 @@ function setup()
   points = [];
   var offsetHeight = document.getElementById('options').clientHeight;
   setNewGradient();
+  pg = createGraphics(windowWidth, windowHeight);
   var cnv = createCanvas(windowWidth, windowHeight);
   cnv.parent('sketch-holder');
-  spawnDots();
   cnv.mousePressed(mouseDot);
+  frameRate(fr);
+  marginTopBottom = (windowHeight - innerScreenHeight) / 2;
+  marginLeftRight = (windowWidth - innerScreenWidth) / 2;
+  spawnDots();
 }
 
 function hexToRgb(hex)
@@ -76,12 +93,12 @@ function windowResized()
 
 function draw()
 {
-  background(0);
+  pg.background(0);
   textSize(10);
+  fill(255);
   for (let i = 0; i < points.length; i++)
   {
-    fill(255);
-    strokeWeight(1);
+    pg.strokeWeight(1);
     points[i].move();
     for (let j = 0; j < points.length; j++)
     {
@@ -90,20 +107,32 @@ function draw()
         let maxLength = max(abs(points[i].x - points[j].x), abs(points[i].y - points[j].y));
         if (maxLength < maxLineLength)
         {
-          let rgb = gradient[Math.floor(Math.abs(min(points[i].x, points[j].x)) / windowWidth * (gradient.length - 1))];
+          let rgb = gradient[Math.floor(Math.abs(Math.min(points[i].x, points[j].x)) / windowWidth * (gradient.length - 10))];
           let intensity = (maxLineLength - maxLength) / maxLineLength;
-          stroke(rgb[0], rgb[1], rgb[2], intensity * 255);
-          strokeWeight(lineWidth);
-          line(points[i].x, points[i].y, points[j].x, points[j].y);
-          stroke(255);
+          pg.stroke(rgb[0], rgb[1], rgb[2], intensity * 255);
+          pg.strokeWeight(lineWidth);
+          pg.line(points[i].x, points[i].y, points[j].x, points[j].y);
+          pg.stroke(255);
         }
       }
     }
-
   }
   for (let i = 0; i < points.length; i++)
     points[i].display();
-  text("Amount of dots: " + points.length, 5, windowHeight - 5);
+  image(pg, 0, 0);
+  stroke(255);
+  if (optionsOpen)
+    text("Amount of dots: " + points.length, 5, windowHeight - 5);
+  if (innerScreenEnabled)
+    rect(marginLeftRight + 5, marginTopBottom + 5, innerScreenWidth - 10, innerScreenHeight - 10);
+}
+
+function keyPressed() 
+{
+  if (key == "o")
+  {
+    showInfo();
+  }
 }
 
 function mouseDot()
@@ -145,6 +174,14 @@ function removeAllDots()
   points = [];
 }
 
+function applyInnerScreen() {
+  let checkbox = document.getElementById("innerScreenEnabled");
+  innerScreenEnabled = checkbox.checked;
+  innerScreenWidth = int(document.getElementById("innerScreenWidth").value);
+  innerScreenHeight = int(document.getElementById("innerScreenHeight").value);
+  setup();
+}
+
 function setMaxLineDist()
 {
   maxLineLength = min(document.getElementById("maxDist").value, maxSafeLineDist);
@@ -159,7 +196,29 @@ function spawnDots()
   document.getElementById("addDots").value = amount;
   for (let i = 0; i < amount; i++)
   {
-    points.push(new Dot(random(0, windowWidth), random(0, windowHeight)));
+    if (innerScreenEnabled)
+    {
+      let rand = int(random(0,4));
+      switch (rand)
+      {
+        case 0:
+          points.push(new Dot(random(0, marginLeftRight), random(0, windowHeight)));
+          break;
+        case 1:
+          points.push(new Dot(random(0, windowWidth), random(0, marginTopBottom)));
+          break;
+        case 2:
+          points.push(new Dot(random(innerScreenWidth + marginLeftRight, windowWidth), random(0, windowHeight)));
+          break;
+        case 3:
+          points.push(new Dot(random(0, windowWidth), random(innerScreenHeight + marginTopBottom, windowHeight)));
+          break;
+      }
+    } 
+    else
+    {
+      points.push(new Dot(random(0, windowWidth), random(0, windowHeight)));
+    }
   }
 }
 
@@ -185,27 +244,33 @@ class Dot
     this.size = random(1,2.5);
     this.x = x; //random(0, windowWidth);
     this.y = y; //random(0, windowHeight);
-    this.speed = this.size * 3;
-    this.direction = [random(0,360), random(0,360)];
+    this.speed = this.size * 0.03;
+    this.direction = [random(-3, 3), random(-3, 3)];
   }
 
   move()
   {
-    if (this.x <= 0 || this.x >= windowWidth)
+    if (innerScreenEnabled)
     {
-      this.direction[0] = this.direction[0] + cos(180);
+      if (this.x <= 0 || this.x >= windowWidth || (((this.x >= marginLeftRight && this.x < marginLeftRight + 10) || (this.x <= marginLeftRight + innerScreenWidth && this.x > marginLeftRight + innerScreenWidth - 10)) && this.y > marginTopBottom && this.y < marginTopBottom + innerScreenHeight))
+        this.direction[0] = -this.direction[0];
+      if (this.y >= windowHeight || this.y <= 0 || (((this.y >= marginTopBottom && this.y < marginTopBottom + 10) || (this.y <= marginTopBottom + innerScreenHeight && this.y > marginTopBottom + innerScreenHeight - 10)) && this.x > marginLeftRight && this.x < marginLeftRight + innerScreenWidth))
+        this.direction[1] = -this.direction[1];
     }
-    if (this.y >= windowHeight || this.y <= 0)
+    else 
     {
-      this.direction[1] = this.direction[1] + sin(180);
+      if (this.x <= 0 || this.x >= windowWidth)
+        this.direction[0] = -this.direction[0];
+      if (this.y >= windowHeight || this.y <= 0)
+        this.direction[1] = -this.direction[1];
     }
-    this.x += this.speed * cos(this.direction[0]) * speedModifier; //* dt;
-    this.y += this.speed * sin(this.direction[1]) * speedModifier; //* dt;
+    this.x += this.speed * this.direction[0] * speedModifier * deltaTime;
+    this.y += this.speed * this.direction[1] * speedModifier * deltaTime;
   }
 
   display()
   {
-    circle(this.x, this.y, this.size);
+    pg.circle(this.x, this.y, this.size);
   }
 
 }
