@@ -7,6 +7,10 @@ This is what it looks like:
 
 ![](ex2.gif)
 
+Usage:
+1. Open index.html in the webbrowser of your choice.
+2. Press o to open the options menu.
+
 Features:
 - Choose any two colors
 - Change the line length
