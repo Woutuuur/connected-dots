@@ -8,12 +8,13 @@ const maxSafeLineDist = 250;
 let pg;
 let dt;
 let fr = 30;
-var innerScreenWidth;
-var innerScreenHeight;
+var innerScreenWidth = 1080;
+var innerScreenHeight = 720;
 var marginTopBottom;
 var marginLeftRight;
 var innerScreenEnabled = false;
 var optionsOpen = true;
+var paused = false;
 
 function interpolateColor(color1, color2, factor) {
     if (arguments.length < 3) { 
@@ -45,7 +46,7 @@ function showInfo()
   let x = document.getElementById("input-fields");
   let y = document.getElementById("options");
   let z = document.getElementById("closeButton");
-  if (x.style.display == "none")
+  if (!optionsOpen)
   {
     optionsOpen = true;
     x.style.display = "inline-block";
@@ -71,6 +72,8 @@ function setup()
   cnv.parent('sketch-holder');
   cnv.mousePressed(mouseDot);
   frameRate(fr);
+  innerScreenWidth = windowWidth * 0.8;
+  innerScreenHeight = windowHeight * 0.8;
   marginTopBottom = (windowHeight - innerScreenHeight) / 2;
   marginLeftRight = (windowWidth - innerScreenWidth) / 2;
   spawnDots();
@@ -96,35 +99,39 @@ function draw()
   pg.background(0);
   textSize(10);
   fill(255);
-  for (let i = 0; i < points.length; i++)
+  if (!paused) 
   {
-    pg.strokeWeight(1);
-    points[i].move();
-    for (let j = 0; j < points.length; j++)
+    for (let i = 0; i < points.length; i++)
     {
-      if (i != j)
+      pg.strokeWeight(1);
+      points[i].move();
+      for (let j = 0; j < points.length; j++)
       {
-        let maxLength = max(abs(points[i].x - points[j].x), abs(points[i].y - points[j].y));
-        if (maxLength < maxLineLength)
+        if (i != j)
         {
-          let rgb = gradient[Math.floor(Math.abs(Math.min(points[i].x, points[j].x)) / windowWidth * (gradient.length - 10))];
-          let intensity = (maxLineLength - maxLength) / maxLineLength;
-          pg.stroke(rgb[0], rgb[1], rgb[2], intensity * 255);
-          pg.strokeWeight(lineWidth);
-          pg.line(points[i].x, points[i].y, points[j].x, points[j].y);
-          pg.stroke(255);
+          let maxLength = max(abs(points[i].x - points[j].x), abs(points[i].y - points[j].y));
+          if (maxLength < maxLineLength)
+          {
+            let rgb = gradient[Math.floor(Math.abs(Math.min(points[i].x, points[j].x)) / windowWidth * (gradient.length - 1))];
+            let intensity = (maxLineLength - maxLength) / maxLineLength;
+            pg.stroke(rgb[0], rgb[1], rgb[2], intensity * 255);
+            pg.strokeWeight(lineWidth);
+            pg.line(points[i].x, points[i].y, points[j].x, points[j].y);
+            pg.stroke(255);
+          }
         }
       }
     }
+    for (let i = 0; i < points.length; i++)
+      points[i].display();
   }
-  for (let i = 0; i < points.length; i++)
-    points[i].display();
   image(pg, 0, 0);
   stroke(255);
   if (optionsOpen)
     text("Amount of dots: " + points.length, 5, windowHeight - 5);
   if (innerScreenEnabled)
     rect(marginLeftRight + 5, marginTopBottom + 5, innerScreenWidth - 10, innerScreenHeight - 10);
+    
 }
 
 function keyPressed() 
