@@ -1,7 +1,7 @@
 # Connected Dots
 Website for creating nice visuals using p5.js 
 
-A (slightly outdated) online version can be found [here](https://editor.p5js.org/Woutuuur/full/MA1PTEHOg).
+An online version can be found [here](https://woutuuur.github.io/connected-dots/).
 
 This is what it looks like:
 
