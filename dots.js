@@ -51,7 +51,7 @@ function showInfo()
     optionsOpen = true;
     x.style.display = "inline-block";
     y.style.background = "rgba(255,255,255,0.1)";
-    z.innerHTML = "x";
+    z.innerHTML = "X";
   }
   else
   {
