@@ -51,14 +51,14 @@ function showInfo()
     optionsOpen = true;
     x.style.display = "inline-block";
     y.style.background = "rgba(255,255,255,0.1)";
-    z.style.display = "inline-block";
+    z.innerHTML = "x";
   }
   else
   {
     optionsOpen = false;
     x.style.display = "none";
     y.style.background = "none";
-    z.style.display = "none";
+    z.innerHTML = "O";
   }
 }
 
